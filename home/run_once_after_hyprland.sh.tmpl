@@ -1,0 +1,17 @@
+{{ if .hypr -}}
+#!/usr/bin/env bash
+# Copies the Hyprland reference config once (no-clobber, so live edits survive),
+# then wires in the NVIDIA env and Sunshine autostart. Runs only when hypr=true.
+set -euo pipefail
+repo={{ .chezmoi.workingTree | quote }}
+for d in hypr waybar swaync wofi; do
+  mkdir -p "$HOME/.config/$d"
+  cp -rn "$repo/reference/$d/." "$HOME/.config/$d/" 2>/dev/null || true
+done
+ln -sfn "$repo/hypr/nvidia.conf" "$HOME/.config/hypr/nvidia.conf"
+hc="$HOME/.config/hypr/hyprland.conf"
+grep -q 'nvidia.conf' "$hc" || echo 'source = ~/.config/hypr/nvidia.conf' >> "$hc"
+ac="$HOME/.config/hypr/autostart.conf"
+grep -q '^exec-once = sunshine$' "$ac" || echo 'exec-once = sunshine' >> "$ac"
+echo "hyprland: reference config installed"
+{{ end -}}

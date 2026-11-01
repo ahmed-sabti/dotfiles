@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=YGO Omega
+Comment=Yu-Gi-Oh! Omega duel simulator
+Exec="/home/user/Games/YGO-Omega/YGO Omega.x86_64"
+Path=/home/user/Games/YGO-Omega
+Icon=/home/user/Games/YGO-Omega/YGO Omega_Data/Resources/UnityPlayer.png
+Categories=Game;CardGame;
+StartupWMClass=YGO Omega.x86_64
+Terminal=false

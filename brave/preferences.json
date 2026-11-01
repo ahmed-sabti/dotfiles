@@ -1,0 +1,19 @@
+{
+  "brave": {
+    "location_bar_is_wide": true,
+    "sidebar": { "sidebar_show_option": 3 },
+    "show_side_panel_button": false,
+    "show_bookmarks_button": false,
+    "rewards": { "show_brave_rewards_button_in_location_bar": false },
+    "ai_chat": {
+      "show_toolbar_button": false,
+      "context_menu_enabled": false,
+      "autocomplete_provider_enabled": false,
+      "tab_organization_enabled": false
+    },
+    "today": { "should_show_toolbar_button": false },
+    "wallet": { "show_wallet_icon_on_toolbar": false },
+    "omnibox": { "bookmark_suggestions_enabled": false }
+  },
+  "translate_blocked_languages": ["en", "de"]
+}

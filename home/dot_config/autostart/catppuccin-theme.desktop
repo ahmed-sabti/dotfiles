@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Apply Catppuccin Mocha
+Comment=Re-apply Catppuccin Mocha color scheme on login (dark mode only; light mode keeps its own colours)
+Exec=sh -c "sleep 3; kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage | grep -q light || plasma-apply-colorscheme CatppuccinMocha >/dev/null 2>&1"
+Icon=preferences-desktop-color
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

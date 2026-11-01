@@ -1,0 +1,118 @@
+{{ if ne .role "server" -}}
+#!/usr/bin/env bash
+# Firefox / Zen / LibreWolf setup, run by `chezmoi apply` (never on its own).
+#  1. policies.json  -> each installed browser (telemetry off, uBlock + Bitwarden + theme, SearXNG)
+#  2. user.js        -> every profile listed in each browser's profiles.ini (Betterfox + overrides)
+# Idempotent: only writes when content differs, and says what it changed.
+set -euo pipefail
+repo={{ .chezmoi.workingTree | quote }}
+policies="$repo/firefox/policies.json"
+userjs="$(mktemp)"; trap 'rm -f "$userjs"' EXIT
+cat "$repo/firefox/betterfox.js" "$repo/firefox/user-overrides.js" > "$userjs"
+
+install_file() { # src dst [sudo]
+  local src="$1" dst="$2" sudo="${3:-}"
+  cmp -s "$src" "$dst" 2>/dev/null && return 0
+  $sudo mkdir -p "$(dirname "$dst")"
+  $sudo cp "$src" "$dst"
+  echo "firefox: updated $dst"
+}
+
+# --- 1. policies ---------------------------------------------------------
+{{ if eq .chezmoi.os "darwin" -}}
+# macOS blocks writes inside signed app bundles, so policies go into each browser's
+# preferences domain instead (key by key, so the browser's own keys are kept).
+for app in /Applications/Firefox.app /Applications/Zen.app /Applications/LibreWolf.app; do
+  [[ -d "$app" ]] || continue
+  dom="$(defaults read "$app/Contents/Info.plist" CFBundleIdentifier)"
+  tmp="$(mktemp)"
+  defaults export "$dom" "$tmp" 2>/dev/null || plutil -create xml1 "$tmp"
+  # merge the policy keys into the exported domain; exit 0 only if something changed
+  if python3 - "$policies" "$tmp" <<'PY'
+import json, plistlib, sys
+pol = json.load(open(sys.argv[1]))["policies"]
+pol["EnterprisePoliciesEnabled"] = True
+with open(sys.argv[2], "rb") as f:
+    cur = plistlib.load(f)
+if all(cur.get(k) == v for k, v in pol.items()):
+    sys.exit(1)
+cur.update(pol)
+with open(sys.argv[2], "wb") as f:
+    plistlib.dump(cur, f)
+PY
+  then changed=1; else changed=0; fi
+  # import goes through cfprefsd, so the browser sees the change (direct plist writes may be cached)
+  (( changed )) && { defaults import "$dom" "$tmp"; echo "firefox: updated policies for $dom"; }
+  rm -f "$tmp"
+done
+{{- else -}}
+# Distro package (Firefox reads /etc/firefox/policies on every distro build)
+if command -v firefox >/dev/null; then
+  install_file "$policies" /etc/firefox/policies/policies.json sudo
+fi
+# Flatpak Firefox reads policies from its systemconfig extension point
+if command -v flatpak >/dev/null && flatpak info org.mozilla.firefox >/dev/null 2>&1; then
+  install_file "$policies" "/var/lib/flatpak/extension/org.mozilla.firefox.systemconfig/$(uname -m)/stable/policies/policies.json" sudo
+fi
+# Zen / LibreWolf: policies go into their install dir's distribution/ folder
+for dir in /opt/zen /opt/zen-browser /usr/lib/zen-browser /usr/lib/librewolf; do
+  [[ -d "$dir" ]] && install_file "$policies" "$dir/distribution/policies.json" sudo
+done
+{{- end }}
+
+# --- 1b. AutoConfig (new tab = home.example.org, address bar stays empty) ----
+# Lives inside the browser install, so browser updates can remove it: re-run chezmoi apply.
+install_autoconfig() { # <dir with the browser binary> <defaults/pref dir> [sudo]
+  local bin="$1" prefdir="$2" sudo="${3:-}"
+  if [[ -z "$sudo" && ! -w "$bin" ]]; then
+    echo "firefox: can't write $bin (macOS: allow your terminal under Privacy & Security > App Management)"
+    return 0
+  fi
+  install_file "$repo/firefox/autoconfig.js" "$prefdir/autoconfig.js" $sudo
+  install_file "$repo/firefox/mozilla.cfg" "$bin/mozilla.cfg" $sudo
+}
+{{ if eq .chezmoi.os "darwin" -}}
+for app in /Applications/Firefox.app /Applications/Zen.app /Applications/LibreWolf.app; do
+  [[ -d "$app" ]] && install_autoconfig "$app/Contents/Resources" "$app/Contents/Resources/defaults/pref"
+done
+{{- else -}}
+for dir in /usr/lib/firefox /usr/lib64/firefox /usr/lib/firefox-esr /opt/firefox \
+           /opt/zen /opt/zen-browser /usr/lib/zen-browser /usr/lib/librewolf; do
+  [[ -x "$dir/firefox" || -x "$dir/zen" || -x "$dir/librewolf" ]] || continue
+  install_autoconfig "$dir" "$dir/defaults/pref" sudo
+done
+# Flatpak installs are read-only: AutoConfig isn't possible there (new tab stays default).
+{{- end }}
+
+# --- 2. user.js into every profile ---------------------------------------
+found=0
+for ini in \
+  "$HOME/Library/Application Support/Firefox/profiles.ini" \
+  "$HOME/Library/Application Support/zen/profiles.ini" \
+  "$HOME/Library/Application Support/librewolf/profiles.ini" \
+  "$HOME/.mozilla/firefox/profiles.ini" \
+  "${XDG_CONFIG_HOME:-$HOME/.config}/mozilla/firefox/profiles.ini" \
+  "$HOME/.var/app/org.mozilla.firefox/.mozilla/firefox/profiles.ini" \
+  "$HOME/.var/app/org.mozilla.firefox/config/mozilla/firefox/profiles.ini" \
+  "$HOME/.zen/profiles.ini" \
+  "$HOME/.var/app/app.zen_browser.zen/.zen/profiles.ini" \
+  "$HOME/.librewolf/profiles.ini"; do
+  [[ -e "$ini" ]] || continue
+  if [[ ! -r "$ini" ]]; then
+    echo "firefox: can't read $ini (macOS privacy). Allow your terminal under System Settings >"
+    echo "         Privacy & Security > App Management / data from other apps, then re-run chezmoi apply"
+    found=1; continue
+  fi
+  base="$(dirname "$ini")"
+  while IFS='=' read -r key val; do
+    [[ "$key" == "Path" ]] || continue
+    val="${val%$'\r'}"
+    [[ "$val" == /* ]] && prof="$val" || prof="$base/$val"
+    [[ -d "$prof" ]] || continue
+    found=1
+    install_file "$userjs" "$prof/user.js"
+    install_file "$repo/firefox/userChrome.css" "$prof/chrome/userChrome.css"
+  done < "$ini"
+done
+(( found )) || echo "firefox: no profile yet - start the browser once, then run 'chezmoi apply' again"
+{{ end -}}

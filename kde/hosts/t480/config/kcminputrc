@@ -1,0 +1,25 @@
+[Libinput][1133][50504][Logitech USB Receiver]
+PointerAccelerationProfile=1
+
+[Libinput][1133][50504][Logitech USB Receiver Mouse]
+PointerAccelerationProfile=1
+
+[Libinput][1133][50504][OL virtual mouse]
+PointerAccelerationProfile=1
+
+[Libinput][1739][0][Synaptics TM3276-022]
+DisableWhileTyping=false
+NaturalScroll=true
+PointerAcceleration=0.200
+PointerAccelerationProfile=0
+
+[Libinput][2][10][TPPS/2 IBM TrackPoint]
+PointerAccelerationProfile=0
+
+[Libinput\x5d\x5b1739\x5d\x5b0\x5d\x5bSynaptics TM3276-022]
+TapToClick=true
+
+[Mouse]
+PointerAcceleration=0.000
+PointerAccelerationProfile=0
+cursorTheme=Bibata-Modern-Ice

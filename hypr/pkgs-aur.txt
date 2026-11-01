@@ -1,0 +1,5 @@
+# arch container / bare-metal-laptop package list (AUR, installed via yay -S --needed)
+# One package per line. # comments and blank lines ignored. Add more anytime.
+
+brave-bin
+vscodium-bin

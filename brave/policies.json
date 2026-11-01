@@ -1,0 +1,128 @@
+{
+  "BraveRewardsDisabled": true,
+  "BraveWalletDisabled": true,
+  "BraveVPNDisabled": true,
+  "BraveAIChatEnabled": false,
+  "BraveLocalAIEnabled": false,
+  "BraveNewsDisabled": true,
+  "BraveTalkDisabled": true,
+  "BravePlaylistEnabled": false,
+  "BraveSpeedreaderEnabled": false,
+  "BraveWaybackMachineEnabled": false,
+  "TorDisabled": true,
+  "BraveP3AEnabled": false,
+  "BraveStatsPingEnabled": false,
+  "BraveWebDiscoveryEnabled": false,
+  "BraveGlobalPrivacyControlEnabled": true,
+  "BraveDeAmpEnabled": true,
+  "BraveDebouncingEnabled": true,
+  "BraveTrackingQueryParametersFilteringEnabled": true,
+  "BraveReduceLanguageEnabled": true,
+  "MetricsReportingEnabled": false,
+  "UrlKeyedAnonymizedDataCollectionEnabled": false,
+  "SpellCheckServiceEnabled": false,
+  "SearchSuggestEnabled": false,
+  "NetworkPredictionOptions": 2,
+  "AlternateErrorPagesEnabled": false,
+  "BackgroundModeEnabled": false,
+  "BrowserSignin": 0,
+  "PromotionsEnabled": false,
+  "DefaultBrowserSettingEnabled": false,
+  "BlockThirdPartyCookies": true,
+  "DefaultGeolocationSetting": 2,
+  "DnsOverHttpsMode": "off",
+  "HttpsOnlyMode": "force_enabled",
+  "PasswordManagerEnabled": false,
+  "AutofillAddressEnabled": false,
+  "AutofillCreditCardEnabled": false,
+  "DefaultSearchProviderEnabled": true,
+  "DefaultSearchProviderName": "SearXNG",
+  "DefaultSearchProviderKeyword": "@s",
+  "DefaultSearchProviderSearchURL": "https://searxng.example.org/search?q={searchTerms}",
+  "HomepageLocation": "https://home.example.org",
+  "HomepageIsNewTabPage": false,
+  "NewTabPageLocation": "https://home.example.org",
+  "RestoreOnStartup": 4,
+  "RestoreOnStartupURLs": [
+    "https://home.example.org"
+  ],
+  "ShowHomeButton": true,
+  "BookmarkBarEnabled": false,
+  "URLBlocklist": [
+    "reddit.com"
+  ],
+  "URLAllowlist": [
+    "reddit.com/r/*/comments/*",
+    "reddit.com/r/*/s/*",
+    "reddit.com/comments/*",
+    "reddit.com/gallery/*",
+    "reddit.com/media*"
+  ],
+  "PasswordManagerPasskeysEnabled": false,
+  "PasswordLeakDetectionEnabled": false,
+  "ImportSavedPasswords": false,
+  "ImportAutofillFormData": false,
+  "PaymentMethodQueryEnabled": false,
+  "EditBookmarksEnabled": false,
+  "ImportBookmarks": false,
+  "SyncTypesListDisabled": [
+    "bookmarks",
+    "passwords",
+    "autofill",
+    "preferences",
+    "extensions",
+    "themes",
+    "apps",
+    "readingList",
+    "savedTabGroups",
+    "productComparison",
+    "cookies"
+  ],
+  "DefaultNotificationsSetting": 2,
+  "WebRtcIPHandling": "default_public_interface_only",
+  "ShoppingListEnabled": false,
+  "SideSearchEnabled": false,
+  "GoogleSearchSidePanelEnabled": false,
+  "BrowserLabsEnabled": false,
+  "ShowFullUrlsInAddressBar": true,
+  "PromptForDownloadLocation": false,
+  "ExtensionInstallBlocklist": [
+    "cimiefiiaegbelhefglklhhakcgmhkai"
+  ],
+  "ExtensionInstallForcelist": [
+    "nngceckbapebfimnlniiiahkandclblb;https://clients2.google.com/service/update2/crx",
+    "mnjggcdmjocbbbhaepdhchncahnbgone;https://clients2.google.com/service/update2/crx",
+    "khncfooichmfjbepaaaebmommgaepoid;https://clients2.google.com/service/update2/crx",
+    "jghckcdnmagoohfbjplpfjbnbkpfcekl;https://clients2.google.com/service/update2/crx",
+    "mpbjkejclgfgadiemmefgebjfooflfhl;https://clients2.google.com/service/update2/crx",
+    "bkkmolkhemgaeaeggcmfbghljjjoofoh;https://clients2.google.com/service/update2/crx",
+    "nmngoggcedjnfcjfjkedmhlnnkpjdocf;https://clients2.google.com/service/update2/crx"
+  ],
+  "3rdparty": {
+    "extensions": {
+      "nngceckbapebfimnlniiiahkandclblb": {
+        "environment": {
+          "base": "https://vault.example.org"
+        }
+      },
+      "cjpalhdlnbpafiamejdnhcphjbkeiagm": {
+        "toOverwrite": {
+          "filterLists": [
+            "user-filters",
+            "ublock-filters",
+            "ublock-badware",
+            "ublock-privacy",
+            "ublock-quick-fixes",
+            "ublock-unbreak",
+            "easylist",
+            "easyprivacy",
+            "urlhaus-1",
+            "plowe-0",
+            "DEU-0",
+            "ublock-cookies-easylist"
+          ]
+        }
+      }
+    }
+  }
+}

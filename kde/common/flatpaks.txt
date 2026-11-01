@@ -1,0 +1,6 @@
+com.bambulab.BambuStudio
+com.discordapp.Discord
+com.unicornsonlsd.finamp
+org.jellyfin.JellyfinDesktop
+org.localsend.localsend_app
+com.nextcloud.desktopclient.nextcloud

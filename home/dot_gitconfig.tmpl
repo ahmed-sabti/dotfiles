@@ -1,0 +1,45 @@
+[user]
+	name = Ahmed Sabti
+	email = 350819864+ahmed-sabti@users.noreply.github.com
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = false
+
+[push]
+	default = current
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
+
+[merge]
+	conflictstyle = zdiff3
+
+[core]
+	editor = nvim
+
+[help]
+	autocorrect = 20
+
+{{- if eq .chezmoi.os "darwin" }}
+[credential]
+	# macOS Keychain: encrypted at rest, unlike `store` which kept tokens as
+	# plaintext in ~/.git-credentials.
+	helper = osxkeychain
+{{- else }}
+[credential]
+	# Linux: keep HTTPS credentials in memory for 1 h (never written to disk).
+	helper = cache --timeout=3600
+{{- end }}
+{{- $gh := lookPath "gh" }}
+{{- if $gh }}
+[credential "https://github.com"]
+	helper =
+	helper = !{{ $gh }} auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !{{ $gh }} auth git-credential
+{{- end }}

@@ -1,0 +1,88 @@
+{{ if ne .role "server" -}}
+#!/usr/bin/env bash
+# Brave setup, run by `chezmoi apply` (never on its own). Same idea as run_after_firefox.
+#  1. policies.json -> managed policy (telemetry, Rewards/Wallet/Leo/VPN, password manager,
+#     bookmarks and notifications off; Bitwarden + add-ons; SearXNG; sync = tabs + history only)
+#  2. preferences.json -> merged into each profile (wide address bar, no sidebar or Leo button,
+#     never translate en/de: there's no policy for these)
+#  3. gaming PC: Brave is the default browser
+# uBlock Origin can't be forced: Brave serves the MV2 build itself, so enable it once in
+# brave://settings/extensions/v2 (its filter lists then come from this policy).
+# Idempotent: only writes when content differs, and says what it changed.
+set -euo pipefail
+policies={{ joinPath .chezmoi.workingTree "brave/policies.json" | quote }}
+
+# --- 1. policies ---------------------------------------------------------
+{{ if eq .chezmoi.os "darwin" -}}
+[[ -d "/Applications/Brave Browser.app" ]] || exit 0
+profiles="$HOME/Library/Application Support/BraveSoftware/Brave-Browser"
+# Chromium reads /Library/Managed Preferences as mandatory policy, MDM or not.
+dst="/Library/Managed Preferences/com.brave.Browser.plist"
+tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
+python3 -I -c 'import json, plistlib, sys; plistlib.dump(json.load(open(sys.argv[1])), open(sys.argv[2], "wb"))' "$policies" "$tmp"
+if ! sudo cmp -s "$tmp" "$dst" 2>/dev/null; then
+  sudo mkdir -p "$(dirname "$dst")"
+  sudo install -m 644 -o root -g wheel "$tmp" "$dst"
+  echo "brave: updated $dst (restart Brave to pick it up)"
+fi
+{{- else -}}
+command -v brave >/dev/null || exit 0
+profiles="${XDG_CONFIG_HOME:-$HOME/.config}/BraveSoftware/Brave-Browser"
+dst=/etc/brave/policies/managed/policies.json
+if ! cmp -s "$policies" "$dst" 2>/dev/null; then
+  sudo mkdir -p "$(dirname "$dst")"
+  sudo cp "$policies" "$dst"
+  echo "brave: updated $dst (restart Brave to pick it up)"
+fi
+{{- if eq .role "gaming" }}
+
+# --- 3. default browser (gaming PC; taskbar slot + Meta+B: kde/hosts/gaming/rewrite.sed) ---
+if [[ "$(xdg-settings get default-web-browser 2>/dev/null)" != brave-browser.desktop ]]; then
+  xdg-settings set default-web-browser brave-browser.desktop 2>/dev/null
+  echo "brave: now the default browser"
+fi
+{{- end }}
+{{- end }}
+
+# --- 2. preferences (settings no policy covers) ---------------------------
+# brave/preferences.json is merged into every profile: wide address bar, no sidebar, no Leo /
+# Rewards / News / Wallet buttons, never translate en/de. Lists are merged, extra entries kept.
+# Brave rewrites Preferences on exit, so only touch them while it's closed.
+shopt -s nullglob
+prefs=("$profiles"/*/Preferences)
+(( ${#prefs[@]} )) || exit 0
+running=0
+pgrep -x brave >/dev/null && running=1
+pgrep -f 'Brave Browser.app/Contents/MacOS' >/dev/null && running=1
+BRAVE_RUNNING=$running python3 -I - {{ joinPath .chezmoi.workingTree "brave/preferences.json" | quote }} "${prefs[@]}" <<'PY'
+import json, os, sys
+want = json.load(open(sys.argv[1]))
+running = os.environ["BRAVE_RUNNING"] == "1"
+
+def merge(cur, new):  # True if cur changed
+    changed = False
+    for k, v in new.items():
+        if isinstance(v, dict):
+            if not isinstance(cur.get(k), dict):
+                cur[k] = {}; changed = True
+            changed |= merge(cur[k], v)
+        elif isinstance(v, list):
+            old = cur.get(k) if isinstance(cur.get(k), list) else []
+            add = [x for x in v if x not in old]
+            if add:
+                cur[k] = old + add; changed = True
+        elif cur.get(k) != v:
+            cur[k] = v; changed = True
+    return changed
+
+for f in sys.argv[2:]:
+    p = json.load(open(f))
+    if not merge(p, want):
+        continue
+    if running:
+        print("brave: close Brave and re-run chezmoi apply (preferences out of date)")
+        break
+    json.dump(p, open(f, "w"), separators=(",", ":"))
+    print(f"brave: updated preferences in {f}")
+PY
+{{ end -}}

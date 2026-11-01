@@ -1,0 +1,91 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+# Shell packages the zshrc and the fastfetch Yu-Gi-Oh logo rely on, per distro (Debian / Fedora / Arch+CachyOS).
+# chezmoi runs this on `chezmoi apply` whenever this file changes. It only installs, never removes.
+#   ImageMagick: scripts/yugioh-lob-art.sh converts the card art (JPEG -> PNG) on the first shell start, and
+#                fastfetch needs its library to send the logo inline over ssh (--logo-type kitty).
+#   kitty terminfo: otherwise TERM=xterm-kitty falls back to xterm-256color over ssh and the logo is skipped.
+#   Neovim >= 0.11 (+ node/gcc/tree-sitter on desktops). Debian (= the server) stays lean: no node toolchain,
+#   the nvim config then skips treesitter builds and the npm-based language servers by itself.
+set -euo pipefail
+SUDO=""; [[ $EUID -ne 0 ]] && SUDO="sudo"
+
+if command -v apt-get >/dev/null; then
+  $SUDO apt-get update -q
+  $SUDO apt-get install -y --no-install-recommends zsh fzf eza zoxide bat fd-find ripgrep starship fastfetch \
+    zsh-autosuggestions zsh-syntax-highlighting imagemagick libmagickcore-7.q16-10 kitty-terminfo git curl python3 ca-certificates unzip
+  # Debian 13 ships fastfetch 2.40 (no colours for the `circle` dots): use the upstream .deb, checked against
+  # the SHA256 digest GitHub publishes for the release asset. Not updated by apt; rerun to update.
+  if [[ "$(fastfetch --version | grep -oE '[0-9]+\.[0-9]+' | head -1)" < "2.50" ]]; then
+    rel=$(curl -fsSL https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | python3 -c 'import json,sys
+d=json.load(sys.stdin); a=[a for a in d["assets"] if a["name"]=="fastfetch-linux-amd64.deb"][0]
+print(a["digest"].split(":")[1], a["browser_download_url"])')
+    tmp=$(mktemp -d); curl -fsSL -o "$tmp/fastfetch.deb" "${rel#* }"
+    echo "${rel%% *}  $tmp/fastfetch.deb" | sha256sum -c - && $SUDO apt-get install -y "$tmp/fastfetch.deb"; rm -rf "$tmp"
+  fi
+elif command -v dnf >/dev/null; then
+  $SUDO dnf install -y zsh fzf eza zoxide bat fd-find ripgrep fastfetch \
+    zsh-autosuggestions zsh-syntax-highlighting ImageMagick kitty-terminfo git curl python3 \
+    neovim nodejs npm gcc tree-sitter-cli unzip   # nvim: mason (npm servers), treesitter parser builds
+elif command -v pacman >/dev/null; then
+  $SUDO pacman -S --needed --noconfirm zsh fzf eza zoxide bat fd ripgrep starship fastfetch \
+    zsh-autosuggestions zsh-syntax-highlighting imagemagick kitty-terminfo git curl python \
+    neovim nodejs npm gcc tree-sitter-cli unzip   # nvim: mason (npm servers), treesitter parser builds
+else
+  echo "shell-packages: unknown package manager, install the packages listed in this script by hand" >&2
+  exit 0
+fi
+
+# Neovim: the nvim config needs >= 0.11 (Debian 13 ships 0.10). Upstream tarball to /opt/nvim, checked against
+# the SHA256 digest GitHub publishes for the release asset. Fedora 44 / Arch already ship >= 0.11.
+nvim_ver=$(nvim --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+if [[ -z "$nvim_ver" ]] || [[ "$(printf '%s\n0.11\n' "$nvim_ver" | sort -V | head -1)" != "0.11" ]]; then
+  arch=$(uname -m); [[ $arch == aarch64 ]] && arch=arm64
+  rel=$(curl -fsSL https://api.github.com/repos/neovim/neovim/releases/latest | python3 -c "import json,sys
+d=json.load(sys.stdin); a=[a for a in d['assets'] if a['name']=='nvim-linux-$arch.tar.gz'][0]
+print(a['digest'].split(':')[1], a['browser_download_url'])")
+  tmp=$(mktemp -d); curl -fsSL -o "$tmp/nvim.tgz" "${rel#* }"
+  echo "${rel%% *}  $tmp/nvim.tgz" | sha256sum -c -
+  $SUDO rm -rf /opt/nvim && $SUDO mkdir -p /opt/nvim && $SUDO tar -xzf "$tmp/nvim.tgz" -C /opt/nvim --strip-components=1
+  $SUDO ln -sfn /opt/nvim/bin/nvim /usr/local/bin/nvim; rm -rf "$tmp"
+  hash -r; nvim --version | head -1
+fi
+
+# starship is not in the Fedora repos: official release binary, checked against its published .sha256
+if ! command -v starship >/dev/null; then
+  base=https://github.com/starship/starship/releases/latest/download/starship-$(uname -m)-unknown-linux-musl.tar.gz
+  tmp=$(mktemp -d); curl -fsSL -o "$tmp/s.tgz" "$base"
+  echo "$(curl -fsSL "$base.sha256")  $tmp/s.tgz" | sha256sum -c - && $SUDO tar -xzf "$tmp/s.tgz" -C /usr/local/bin starship
+  rm -rf "$tmp"
+fi
+
+{{ if ne .role "server" -}}
+# Wayland clipboard: CLI tools inside kitty (Claude Code, pi, ...) shell out to wl-copy/wl-paste;
+# without it they report "clipboard unavailable" on Plasma/Hyprland.
+if ! command -v wl-copy >/dev/null; then
+  if command -v apt-get >/dev/null; then $SUDO apt-get install -y wl-clipboard
+  elif command -v dnf >/dev/null; then $SUDO dnf install -y wl-clipboard
+  elif command -v pacman >/dev/null; then $SUDO pacman -S --needed --noconfirm wl-clipboard
+  fi
+fi
+
+# kitty's font (kitty.conf: CaskaydiaCove Nerd Font) is in no distro repo: official Nerd Fonts release,
+# checked against the release's SHA-256.txt, installed per user. Without it kitty silently falls back.
+if ! fc-list : family | tr ',' '\n' | grep -qx "CaskaydiaCove Nerd Font"; then
+  base=https://github.com/ryanoasis/nerd-fonts/releases/latest/download
+  tmp=$(mktemp -d); curl -fsSL -o "$tmp/CascadiaCode.tar.xz" "$base/CascadiaCode.tar.xz"
+  (cd "$tmp" && curl -fsSL "$base/SHA-256.txt" | grep " CascadiaCode.tar.xz$" | sha256sum -c -)
+  mkdir -p "$HOME/.local/share/fonts/CaskaydiaCoveNerdFont"
+  tar -xJf "$tmp/CascadiaCode.tar.xz" -C "$HOME/.local/share/fonts/CaskaydiaCoveNerdFont" --wildcards "*.ttf"
+  rm -rf "$tmp"; fc-cache -f "$HOME/.local/share/fonts" >/dev/null
+fi
+{{ end -}}
+
+# fzf-tab is not packaged on Debian/Fedora (Arch: AUR fzf-tab-git). The zshrc also looks in /usr/local/share.
+have_fzftab=""
+for f in /usr/share/zsh/plugins/fzf-tab*/fzf-tab.plugin.zsh /usr/local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh; do
+  [[ -f "$f" ]] && have_fzftab=1
+done
+[[ -n "$have_fzftab" ]] || $SUDO git clone -q --depth 1 https://github.com/Aloxaf/fzf-tab /usr/local/share/zsh/plugins/fzf-tab
+echo "shell-packages: done (the Yu-Gi-Oh card art downloads on the next shell start, ~48 MB once)"
+{{ end -}}

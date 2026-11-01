@@ -1,0 +1,2 @@
+# Fedora packages, one per line. Not filled in yet: the T480 was set up by hand and is the machine
+# the others copy. To fill it on the T480:  dnf repoquery --userinstalled --qf '%{name}\n'

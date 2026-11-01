@@ -1,0 +1,126 @@
+{
+  "policies": {
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "DisableFeedbackCommands": true,
+    "DontCheckDefaultBrowser": true,
+    "PasswordManagerEnabled": false,
+    "OfferToSaveLogins": false,
+    "HttpsOnlyMode": "enabled",
+    "DNSOverHTTPS": {
+      "Enabled": false,
+      "Locked": false
+    },
+    "FirefoxHome": {
+      "Search": true,
+      "TopSites": true,
+      "SponsoredTopSites": false,
+      "Highlights": false,
+      "Pocket": false,
+      "SponsoredPocket": false,
+      "Snippets": false,
+      "Locked": false
+    },
+    "FirefoxSuggest": {
+      "WebSuggestions": false,
+      "SponsoredSuggestions": false,
+      "ImproveSuggest": false,
+      "Locked": false
+    },
+    "UserMessaging": {
+      "ExtensionRecommendations": false,
+      "FeatureRecommendations": false,
+      "UrlbarInterventions": false,
+      "SkipOnboarding": true,
+      "MoreFromMozilla": false,
+      "FirefoxLabs": false,
+      "Locked": false
+    },
+    "SearchEngines": {
+      "Add": [
+        {
+          "Name": "SearXNG",
+          "URLTemplate": "https://searxng.example.org/search?q={searchTerms}",
+          "Method": "GET",
+          "IconURL": "https://searxng.example.org/favicon.ico",
+          "Alias": "@s",
+          "Description": "Self-hosted SearXNG (home network or WireGuard)"
+        }
+      ],
+      "Default": "SearXNG",
+      "Remove": [
+        "Google",
+        "Bing",
+        "Amazon.de",
+        "eBay",
+        "Perplexity"
+      ]
+    },
+    "ExtensionSettings": {
+      "uBlock0@raymondhill.net": {
+        "installation_mode": "force_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi"
+      },
+      "{446900e4-71c2-419f-a6a7-df9c091e268b}": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi"
+      },
+      "{76aabc99-c1a8-4c1e-832b-d4f2941d5a7a}": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/catppuccin-mocha-mauve-git/latest.xpi"
+      },
+      "newtaboverride@agenedia.com": {
+        "installation_mode": "blocked"
+      }
+    },
+    "3rdparty": {
+      "Extensions": {
+        "uBlock0@raymondhill.net": {
+          "toOverwrite": {
+            "filterLists": [
+              "user-filters",
+              "ublock-filters",
+              "ublock-badware",
+              "ublock-privacy",
+              "ublock-quick-fixes",
+              "ublock-unbreak",
+              "easylist",
+              "easyprivacy",
+              "urlhaus-1",
+              "plowe-0",
+              "DEU-0",
+              "ublock-cookies-easylist"
+            ]
+          }
+        },
+        "{446900e4-71c2-419f-a6a7-df9c091e268b}": {
+          "environment": {
+            "base": "https://vault.example.org"
+          }
+        }
+      }
+    },
+    "DisplayBookmarksToolbar": "never",
+    "NoDefaultBookmarks": true,
+    "Homepage": {
+      "URL": "https://home.example.org",
+      "StartPage": "homepage",
+      "Locked": false
+    },
+    "DisableDefaultBrowserAgent": true,
+    "DisableFirefoxScreenshots": true,
+    "WebsiteFilter": {
+      "Block": [
+        "*://*.reddit.com/*"
+      ],
+      "Exceptions": [
+        "*://*.reddit.com/r/*/comments/*",
+        "*://*.reddit.com/r/*/s/*",
+        "*://*.reddit.com/comments/*",
+        "*://*.reddit.com/gallery/*",
+        "*://*.reddit.com/media*"
+      ]
+    }
+  }
+}

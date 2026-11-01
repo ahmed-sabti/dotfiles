@@ -1,0 +1,5 @@
+# AUR (installed with paru, which CachyOS ships)
+bibata-cursor-theme-bin
+vscodium-bin
+protonplus
+openlogi-bin

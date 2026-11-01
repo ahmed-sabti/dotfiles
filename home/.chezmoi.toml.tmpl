@@ -1,0 +1,18 @@
+{{- /* Asked once per machine by `chezmoi init`; answers live in ~/.config/chezmoi/chezmoi.toml. */ -}}
+{{- $role := promptStringOnce . "role" "Machine role (mac, laptop, gaming, server)" -}}
+{{- $hypr := promptBoolOnce . "hypr" "Install the Hyprland rice" false -}}
+sourceDir = {{ .chezmoi.workingTree | quote }}
+# Plain config files become symlinks into this repo, so edits on either side are live
+# (same behaviour as the old install.sh). Templates are rendered as real files.
+mode = "symlink"
+
+# Secrets (e.g. the pi DeepSeek key) are age-encrypted in the repo. The private key lives only in
+# ~/.config/chezmoi/key.txt (copy it from Vaultwarden on a new machine BEFORE `chezmoi apply`).
+encryption = "age"
+[age]
+  identity = "~/.config/chezmoi/key.txt"
+  recipient = "age1xgjtxgv96jwtmm0ek7pvqrpjupjrv2pl92jc0yq9r9njnhea8urqrvftkc"
+
+[data]
+  role = {{ $role | quote }}
+  hypr = {{ $hypr }}

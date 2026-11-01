@@ -1,0 +1,28 @@
+# Targets skipped per machine. Paths are relative to $HOME.
+{{ if ne .chezmoi.os "linux" }}
+.config/gtk-3.0
+.config/gtk-4.0
+.config/plasma-workspace
+.config/autostart
+.local/share/color-schemes
+{{ end }}
+{{ if eq .role "server" }}
+.zshrc.local
+.config/kitty
+.config/gtk-3.0
+.config/gtk-4.0
+.config/plasma-workspace
+.config/autostart
+.local/share/color-schemes
+.mozilla
+.zen
+{{ end }}
+
+# Steam helper for the shared Windows/Linux game library: gaming PC only
+{{ if ne .role "gaming" }}
+{{ end }}
+
+# pi's DeepSeek key (age-encrypted): only where the age key exists, never on the server
+{{ if or (eq .role "server") (not (stat (joinPath .chezmoi.homeDir ".config/chezmoi/key.txt"))) }}
+.pi/agent/auth.json
+{{ end }}

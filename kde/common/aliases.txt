@@ -1,0 +1,7 @@
+# App ids that differ between distros, used in launchers, shortcuts and notification settings.
+# A line rewrites <from> to <to> only when <from>.desktop is missing here and <to> exists.
+#   from | to | where <to> must exist
+org.mozilla.firefox|firefox|/usr/share/applications/firefox.desktop
+firefox|org.mozilla.firefox|/usr/share/applications/org.mozilla.firefox.desktop
+com.visualstudio.CodeOSS|codium|/usr/share/applications/codium.desktop
+codium|com.visualstudio.CodeOSS|/usr/share/applications/com.visualstudio.CodeOSS.desktop

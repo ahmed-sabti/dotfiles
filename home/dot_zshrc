@@ -1,0 +1,198 @@
+# --- Terminal compatibility ---
+# Fall back to xterm-256color if TERM is unknown (e.g. missing terminfo)
+if [[ -n "$TERM" ]] && ! infocmp "$TERM" &>/dev/null; then
+  export TERM=xterm-256color
+fi
+
+# --- Zsh Options & History ---
+HISTFILE=~/.zsh_history
+[[ -d "${HISTFILE:h}" ]] || mkdir -p "${HISTFILE:h}" 2>/dev/null
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY
+setopt AUTO_CD
+setopt GLOBDOTS
+PROMPT_EOL_MARK=''
+
+# --- Starship Prompt ---
+if [[ -z "${STARSHIP_CONFIG:-}" ]]; then
+  if [[ -f "$HOME/.config/starship/starship.toml" ]]; then
+    export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+  elif [[ -f "$HOME/.config/starship.toml" ]]; then
+    export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+  fi
+fi
+
+if command -v starship &>/dev/null; then
+  eval "$(starship init zsh)"
+fi
+
+# --- Aliases (Modern Tools) ---
+command -v eza &>/dev/null && alias ls='eza --icons --group-directories-first'
+command -v eza &>/dev/null && alias ll='eza -alF --icons --group-directories-first'
+command -v rg &>/dev/null && alias grep='rg'
+command -v btop &>/dev/null && alias top='btop'
+command -v nvim &>/dev/null && alias v='nvim'
+command -v nvim &>/dev/null && alias vi='nvim'
+command -v nvim &>/dev/null && alias vim='nvim'
+command -v lazygit &>/dev/null && alias lg='lazygit'
+
+# --- Fastfetch: random logo art (dotfile setting) ---
+# In local kitty the logo is a real image (kitty graphics protocol):
+#   FASTFETCH_LOGO=yugioh (default): a random monster from Yu-Gi-Oh! Legend of Blue Eyes
+#     White Dragon, cached once by scripts/yugioh-lob-art.sh in ~/.cache/yugioh-lob
+#   FASTFETCH_LOGO=pokemon: a high-res Pokemon HOME render from ~/.cache/pokemon-art
+#     (one new image is fetched in the background per launch)
+# Over ssh from kitty the same image is sent inline. Other terminals: pixel Pokemon sprite via krabby.
+# Set FASTFETCH_POKEMON=0 to disable the logo art and use the fastfetch default.
+_yugioh_art() {  # sets REPLY; runs in the current shell so $RANDOM advances
+  local dir="$HOME/.cache/yugioh-lob"
+  local -a imgs=("$dir"/*.png(N))
+  if (( ! ${#imgs} )); then
+    local fetch="$HOME/projects/dotfiles/scripts/yugioh-lob-art.sh"
+    [[ -x "$fetch" && ! -e "$dir/.fetching" ]] && { mkdir -p "$dir"; touch "$dir/.fetching";
+      ( "$fetch"; rm -f "$dir/.fetching" ) &>/dev/null &! }
+    return 1
+  fi
+  REPLY="${imgs[RANDOM % ${#imgs} + 1]}"
+}
+
+_pokemon_art() {  # sets REPLY
+  local dir="$HOME/.cache/pokemon-art" id
+  mkdir -p "$dir"
+  id=$(( RANDOM % 1025 + 1 ))
+  [[ -s "$dir/$id.png" ]] || ( curl -fsSL --max-time 15 -o "$dir/$id.png.part" \
+    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/$id.png" \
+    && mv "$dir/$id.png.part" "$dir/$id.png" || rm -f "$dir/$id.png.part" ) &>/dev/null &!
+  local -a imgs=("$dir"/*.png(N))
+  (( ${#imgs} )) || return 1
+  REPLY="${imgs[RANDOM % ${#imgs} + 1]}"
+}
+
+fastfetch() {
+  local out img
+  # Image: 38x19 cells (square), padded 2 rows top so it sits centred beside the 23-line info block.
+  # Local kitty reads the file itself (kitty-direct); over ssh from kitty the image is sent inline (kitty).
+  local ltype=""
+  if [[ -n "${SSH_CONNECTION:-}" ]]; then [[ "$TERM" == "xterm-kitty" ]] && ltype=kitty
+  elif [[ -n "${KITTY_WINDOW_ID:-}" ]]; then ltype=kitty-direct; fi
+  if [[ "${FASTFETCH_POKEMON:-1}" == "1" && -n "$ltype" ]] \
+      && { [[ "${FASTFETCH_LOGO:-yugioh}" == "yugioh" ]] && _yugioh_art || _pokemon_art; } \
+      && img=$REPLY && [[ -n "$img" ]]; then
+    command fastfetch --logo "$img" --logo-type $ltype --logo-width 38 --logo-height 19 \
+      --logo-padding-top 2 --logo-padding-left 3 --logo-padding-right 3 "$@"
+    return
+  fi
+  if [[ "${FASTFETCH_POKEMON:-1}" == "1" ]] && command -v krabby &>/dev/null; then
+    out=$(command fastfetch --logo <(krabby random 1-8 | sed 's/\x1b\[38;2;0;0;0m/\x1b[39m/g') --logo-type file --logo-width 40 --logo-padding-right 5 "$@" 2>/dev/null)
+  else
+    out=$(command fastfetch "$@")
+  fi
+  # Strip trailing visually-blank lines (krabby ascii artifacts)
+  while [[ "$out" == *$'\n' ]] || [[ "$(echo "${out##*$'\n'}" | sed 's/\x1b\[[0-9;]*m//g')" =~ ^[[:space:]]*$ ]]; do
+    out="${out%$'\n'*}"
+  done
+  printf '%s\n' "$out"
+}
+
+# bat/batcat alias (name differs per distro)
+if command -v batcat &>/dev/null; then
+    alias cat='batcat -p'
+elif command -v bat &>/dev/null; then
+    alias cat='bat -p'
+fi
+
+# fd/fdfind alias
+if command -v fdfind &>/dev/null; then
+    alias fd='fdfind'
+fi
+
+# --- Completion ---
+# Homebrew installs completions (git, brew, gh, ...) here; it must be on fpath before compinit.
+for _d in /opt/homebrew/share/zsh/site-functions /usr/local/share/zsh/site-functions; do
+  [[ -d $_d ]] && fpath=($_d $fpath)
+done
+unset _d
+mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+autoload -Uz compinit
+compinit -i -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':completion:*' menu no   # fzf-tab replaces the completion menu
+
+# fzf-tab: fuzzy picker for Tab completion; must load after compinit and before autosuggestions.
+for _f in /opt/homebrew/share/fzf-tab/fzf-tab.zsh \
+          /usr/share/zsh/plugins/fzf-tab-git/fzf-tab.plugin.zsh \
+          /usr/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh \
+          /usr/local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh; do   # Debian: git clone (not packaged)
+  [[ -f $_f ]] && { source $_f; break; }
+done
+unset _f
+if command -v eza &>/dev/null; then
+  zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+  zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+fi
+zstyle ':fzf-tab:*' switch-group '<' '>'
+
+# --- Plugins ---
+# Support both Debian and Arch plugin paths
+plugins=(
+    /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+    /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+    /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+)
+
+for plugin in $plugins; do
+    [[ -f $plugin ]] && source $plugin
+done
+
+# --- Keybinds ---
+bindkey '^R' history-incremental-search-backward
+bindkey '^[[H' beginning-of-line
+bindkey '^[[F' end-of-line
+bindkey '^?' backward-delete-char      # Backspace
+bindkey '^H' backward-delete-char      # Ctrl+Backspace / alternate backspace
+bindkey '^[[3~' delete-char            # Delete key
+bindkey '^[[1;5C' forward-word         # Ctrl+Right
+bindkey '^[[1;5D' backward-word        # Ctrl+Left
+
+# --- fzf: Ctrl-R history, Ctrl-T files, Alt-C (or Esc c) directories; replaces ^R above ---
+if command -v fzf &>/dev/null; then
+  export FZF_DEFAULT_OPTS="--height 40% --layout reverse --border rounded --info inline \
+--color=bg+:#313244,bg:-1,spinner:#F5E0DC,hl:#F38BA8,fg:#CDD6F4,header:#F38BA8,info:#CBA6F7 \
+--color=pointer:#F5E0DC,marker:#B4BEFE,fg+:#CDD6F4,prompt:#CBA6F7,hl+:#F38BA8,border:#6C7086"
+  _fd=$(command -v fd || command -v fdfind)
+  if [[ -n $_fd ]]; then
+    export FZF_DEFAULT_COMMAND="$_fd --type f --hidden --exclude .git"
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND="$_fd --type d --hidden --exclude .git"
+  fi
+  unset _fd
+  _bat=$(command -v bat || command -v batcat)
+  [[ -n $_bat ]] && export FZF_CTRL_T_OPTS="--preview '$_bat -n --color=always --line-range :200 {}'"
+  unset _bat
+  command -v eza &>/dev/null && export FZF_ALT_C_OPTS="--preview 'eza -1 --color=always --icons {}'"
+  source <(fzf --zsh) 2>/dev/null
+fi
+
+# --- Path ---
+export PATH="$HOME/.local/bin:$PATH"   # npm prefix is ~/.local (see ~/.npmrc)
+
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+fi
+
+# Source local overrides if present (e.g. platform-specific settings)
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
+# --- Fastfetch on interactive shell start (top-level terminal only, not tmux/herdr panes) ---
+if [[ $- == *i* ]] && [[ -z "${TMUX:-}" ]] && [[ -z "${HERDR_ENV:-}" ]] && command -v fastfetch &>/dev/null; then
+  fastfetch
+fi

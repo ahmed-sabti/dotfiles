@@ -1,0 +1,14 @@
+.DS_Store
+*.swp
+*.swo
+*~
+git/credentials
+git/credentials.*
+*.secret
+*.secrets
+*.token
+.env
+.env.*
+@eaDir/
+**/@eaDir/
+

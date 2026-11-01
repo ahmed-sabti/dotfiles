@@ -1,0 +1,54 @@
+# arch container / bare-metal-laptop package list (official repos, pacman -S --needed)
+# One package per line. # comments and blank lines ignored. Add more anytime.
+
+# --- Hyprland / Wayland core ---
+hyprland
+xdg-desktop-portal-hyprland
+xdg-desktop-portal
+seatd
+polkit-kde-agent
+qt5-wayland
+qt6-wayland
+
+# --- desktop shell ---
+waybar
+wofi
+swaync
+hypridle
+hyprlock
+hyprpaper
+
+# --- audio ---
+pipewire
+pipewire-pulse
+wireplumber
+pavucontrol
+
+# --- apps ---
+kitty
+obs-studio
+discord
+steam
+gamescope
+
+# --- wayland utilities ---
+grim
+slurp
+wl-clipboard
+brightnessctl
+playerctl
+
+# --- media / networking ---
+vlc
+syncthing
+tailscale
+
+# --- shell (dotfiles zsh stack) ---
+zsh
+zsh-autosuggestions
+zsh-syntax-highlighting
+
+# --- fonts / icons ---
+ttf-jetbrains-mono-nerd
+noto-fonts
+papirus-icon-theme

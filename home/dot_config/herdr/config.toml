@@ -1,0 +1,27 @@
+# herdr config — replaces tmux.conf. Catppuccin theme matches kitty/btop/GTK/KDE.
+# Full reference: `herdr --default-config`. Validate with `herdr config check`.
+
+[theme]
+name = "catppuccin"
+
+[ui]
+# Manual pane labels (set via `pane rename` / herdr's rename keybinding) already
+# show on borders whenever pane_borders is on — this only controls the fallback
+# label shown when no manual name is set.
+show_agent_labels_on_pane_borders = true
+
+[keys]
+# Direct (no-prefix) pane navigation — mirrors the old tmux Shift+Arrow binds.
+# Confirmed valid via `herdr config check`; herdr's own prefix+h/j/k/l still work too.
+focus_pane_up = "shift+up"
+focus_pane_down = "shift+down"
+focus_pane_left = "shift+left"
+focus_pane_right = "shift+right"
+
+# Direct new-tab, mirrors the old tmux Shift+Enter bind.
+new_tab = "shift+enter"
+
+# Note: tmux also had no-prefix Shift+PageUp/PageDown for window switching.
+# herdr rejects shift+pageup/pagedown as bindings ("invalid keybinding" in
+# `herdr config check`), so previous_tab/next_tab stay on their defaults
+# (prefix+p / prefix+n).

@@ -1,0 +1,10 @@
+/* Firefox UI trims, installed into <profile>/chrome/ by run_after_firefox.sh.
+   Needs toolkit.legacyUserProfileCustomizations.stylesheets (set by Betterfox). */
+
+/* No sidebar at all: panel, revamped launcher, splitter and toolbar button. */
+#sidebar-box, #sidebar-main, #sidebar-splitter, #sidebar-launcher-splitter,
+#sidebar-button { display: none !important; }
+
+/* No bookmarks anywhere: toolbar, star in the URL bar, menu button. */
+#PersonalToolbar, #star-button-box, #bookmarks-menu-button,
+#library-button { display: none !important; }

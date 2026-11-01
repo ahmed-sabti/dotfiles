@@ -1,0 +1,57 @@
+.fs-full-screen-player-queue-module-grid-container {
+    background-color: rgb(49, 50, 68);
+    border-radius: 20px;
+}
+:where([data-mantine-color-scheme="dark"]) .m_7cda1cd6,.fs-sidebar-module-accordion-control:hover,:where([data-mantine-color-scheme="dark"]) .m_7cda1cd6,.fs-dropdown-menu-module-menu-item:hover {
+background-color:rgb(108, 112, 134);
+}
+.fs-code-module-root,.fs-sidebar-play-queue-module-lyrics-section,.fs-right-sidebar-module-right-sidebar-container,.fs-sidebar-module-accordion-content,.fs-sidebar-module-container,.fs-code-module-root,.fs-window-bar-module-macos-container,.fs-button-module-root[data-variant="default"],.fs-text-input-module-input[data-variant="default"] {
+background-color:rgb(49, 50, 68);
+}
+.fs-select-module-input[data-variant="default"], .fs-color-input-module-input[data-variant="default"], [data-mantine-color-scheme="dark"] .m_9307d992, .fs-number-input-module-input[data-variant="default"], .fs-multi-select-module-input[data-variant="default"], .fs-segmented-control-module-root,.fs-sidebar-module-accordion-control:hover,.fs-context-menu-module-container, .fs-dropdown-menu-module-menu-dropdown, .fs-context-menu-module-content, .fs-popover-module-dropdown,[data-mantine-color-scheme="dark"] .fs-item-table-list-column-module-container.fs-item-table-list-column-module-data-row.fs-item-table-list-column-module-row-selected::before, .fs-server-selector-module-button-group,.fs-page-header-module-background-image-overlay.fs-page-header-module-dark,[data-mantine-color-scheme="dark"] .fs-button-module-root[data-variant="subtle"]:hover, [data-mantine-color-scheme="dark"] .fs-button-module-root[data-variant="subtle"]:active, [data-mantine-color-scheme="dark"] .fs-button-module-root[data-variant="subtle"]:focus-visible, [data-mantine-color-scheme="dark"] .fs-action-icon-module-root[data-variant="subtle"]:hover, [data-mantine-color-scheme="dark"] .fs-action-icon-module-root[data-variant="subtle"]:active, [data-mantine-color-scheme="dark"] .fs-action-icon-module-root[data-variant="subtle"]:focus-visible, .fs-action-icon-module-root[data-variant="default"]:hover,.fs-select-module-input[data-variant="default"], .fs-color-input-module-input[data-variant="default"], [data-mantine-color-scheme="dark"] .m_9307d992, .fs-number-input-module-input[data-variant="default"], .fs-multi-select-module-input[data-variant="default"], .fs-segmented-control-module-root,.fs-item-table-list-column-module-container.fs-item-table-list-column-module-data-row.fs-item-table-list-column-module-row-hover-highlight-enabled.fs-item-table-list-column-module-row-hovered::before {
+background-color:rgb(88, 91, 112);
+}
+.fs-item-table-list-module-item-table-container {
+background-color:rgb(46, 46, 64);
+}
+.fs-textarea-module-input, .fs-action-icon-module-root[data-variant="default"], .fs-textarea-module-input,.fs-featured-genres-module-genre-container {
+background-color:rgb(69, 71, 90);
+}
+.ag-header-viewport,.ag-row,.ag-body-horizontal-scroll-viewport,.ag-row-odd {
+background-color:rgb(57, 61, 78) !important;
+}
+.ag-row-odd,.fs-main-content-module-main-content-container,.fs-modal-module-content,.fs-modal-module-header,.fs-page-header-module-header {
+background-color:rgb(40, 44, 60);
+}
+:root .ag-theme-alpine-dark {
+--ag-background-color: rgb(40, 44, 60) !important;
+--ag-header-background-color: rgb(40, 44, 60) !important;
+}
+.fs-player-bar-module-container {
+background-color:color-mix(in srgb, rgb(49, 50, 68) 90%, rgb(57, 61, 78)) !important;
+}
+body {
+color:rgb(245, 194, 231);
+}
+.fs-player-button-module-main {
+background-color:rgb(245, 194, 231) !important;
+}
+.full-screen-player-queue-header {
+background-color: rgb(49, 50, 68);
+}
+::-webkit-scrollbar-thumb, ::-webkit-scrollbar {
+border-bottom-left-radius:10px !important;
+border-bottom-right-radius:10px !important;
+border-top-right-radius:10px !important;
+border-top-left-radius:10px !important;
+}
+.fs-album-detail-content-module-detail-container {
+padding: 5rem 2rem 5rem;
+}
+.fs-library-header-module-library-header {
+    padding: 5rem 4rem 1rem;
+}
+.os-scrollbar-handle {
+    border-radius: 10px;
+    background: rgb(245, 194, 231);
+}
